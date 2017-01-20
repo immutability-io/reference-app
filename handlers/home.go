@@ -27,7 +27,7 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 		logrus.Debug(string(htmlData))
 	}
 
-	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/home.html.tmpl")
+	tmpl, err := template.ParseFiles("/templates/dashboard.html.tmpl", "/templates/home.html.tmpl")
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
