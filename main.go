@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/immutability-io/reference-app/application"
 	"github.com/spf13/viper"
 	"github.com/tylerb/graceful"
 	"net/http"
+	"os"
 	"time"
-
-	"github.com/immutability-io/reference-app/application"
 )
 
 func newConfig() (*viper.Viper, error) {
@@ -25,6 +25,8 @@ func newConfig() (*viper.Viper, error) {
 
 func main() {
 	config, err := newConfig()
+	logrus.SetOutput(os.Stdout)
+	logrus.SetLevel(logrus.DebugLevel)
 	if err != nil {
 		logrus.Fatal(err)
 	}
