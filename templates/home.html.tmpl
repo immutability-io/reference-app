@@ -3,7 +3,10 @@
     <div class="row">
         <div class="jumbotron">
             <h1>Hello, {{ .FirstName }} {{ .LastName }}!</h1>
-            <p>Welcome to your new Go web project.</p>
+            <p>Your entitlements are:</p>
+            {{ range .Entitlements }}
+            <p>{{ . }}</p>
+            {{ end }}
         </div>
     </div>
 </div>
