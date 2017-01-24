@@ -27,6 +27,18 @@ type CIAMSession struct {
 	Customer                 string   `json:"customer"`
 }
 
+func GetHealth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	tmpl, err := template.ParseFiles("/content/templates/dashboard.html.tmpl", "/content/templates/health.html.tmpl")
+
+	if err != nil {
+		libhttp.HandleErrorJson(w, err)
+		return
+	}
+
+	tmpl.Execute(w, nil)
+}
+
 func GetHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	ciamDomain := os.Getenv("CIAM_DOMAIN")
