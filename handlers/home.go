@@ -3,8 +3,6 @@ package handlers
 import (
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
-	"github.com/Sirupsen/logrus"
 	"github.com/immutability-io/reference-app/libhttp"
 	"html/template"
 	"io/ioutil"
