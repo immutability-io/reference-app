@@ -56,7 +56,7 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/home.html.tmpl")
+	tmpl, err := template.ParseFiles("/content/templates/dashboard.html.tmpl", "/content/templates/home.html.tmpl")
 
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
