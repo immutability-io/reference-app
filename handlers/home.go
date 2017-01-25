@@ -7,7 +7,6 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
-	"os"
 )
 
 type CIAMSession struct {
@@ -41,7 +40,7 @@ func GetHealth(w http.ResponseWriter, r *http.Request) {
 
 func GetHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	ciamDomain := os.Getenv("CIAM_DOMAIN")
+	ciamDomain := "orchis.ciam-d.troweprice.io"
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
