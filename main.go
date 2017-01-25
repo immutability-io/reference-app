@@ -25,8 +25,11 @@ func newConfig() (*viper.Viper, error) {
 
 func main() {
 	config, err := newConfig()
-	logrus.SetOutput(os.Stdout)
-	logrus.SetLevel(logrus.DebugLevel)
+	f, err := os.OpenFile("/tmp/golang.debug", os.O_WRONLY | os.O_CREATE, 0755)
+	if err != nil {
+	    return
+	}
+	logrus.SetOutput(f)	logrus.SetLevel(logrus.DebugLevel)
 	if err != nil {
 		logrus.Fatal(err)
 	}

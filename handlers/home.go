@@ -40,12 +40,12 @@ func GetHealth(w http.ResponseWriter, r *http.Request) {
 
 func GetHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	ciamDomain := "orchis.ciam-d.troweprice.io"
+
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: tr}
-	sessionDetails, _ := http.NewRequest("GET", "https://"+ciamDomain+"/ui/api/session", nil)
+	sessionDetails, _ := http.NewRequest("GET", "https://orchis.ciam-d.troweprice.io/ui/api/session", nil)
 	cookie, _ := r.Cookie("token")
 	sessionDetails.AddCookie(cookie)
 	resp, err := client.Do(sessionDetails)

@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	"net/http"
-	"os"
 )
 
 func SetSessionStore(sessionStore sessions.Store) func(http.Handler) http.Handler {
@@ -22,25 +21,22 @@ func SetSessionStore(sessionStore sessions.Store) func(http.Handler) http.Handle
 // MustLogin is a middleware that checks existence of current user.
 func MustLogin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		ciamDomain := os.Getenv("CIAM_DOMAIN")
-		if ciamDomain == "" {
-			return
-		}
+
 		tr := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 		client := &http.Client{Transport: tr}
-		sessionRequest, _ := http.NewRequest("GET", "https://"+ciamDomain+"/ui/api/session/verify", nil)
+		sessionRequest, _ := http.NewRequest("GET", "https://orchis.ciam-d.troweprice.io/ui/api/session/verify", nil)
 		cookie, _ := req.Cookie("token")
 		if cookie == nil {
-			http.Redirect(res, req, "https://"+ciamDomain, 302)
+			http.Redirect(res, req, "https://orchis.ciam-d.troweprice.io", 302)
 			return
 		}
 		sessionRequest.AddCookie(cookie)
 		resp, _ := client.Do(sessionRequest)
 
 		if resp == nil || resp.StatusCode != 200 {
-			http.Redirect(res, req, "https://"+ciamDomain, 302)
+			http.Redirect(res, req, "https://orchis.ciam-d.troweprice.io", 302)
 			return
 		}
 		next.ServeHTTP(res, req)
