@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
+	"github.com/Sirupsen/logrus"
 	"github.com/immutability-io/reference-app/libhttp"
 	"html/template"
 	"io/ioutil"
@@ -40,11 +42,21 @@ func GetHealth(w http.ResponseWriter, r *http.Request) {
 
 func GetHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	caCert, err := ioutil.ReadFile("/etc/ssl/root.crt")
+	if err != nil {
+		logrus.Fatal(err)
+		return
 	}
-	client := &http.Client{Transport: tr}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: caCertPool,
+			},
+		},
+	}
 	sessionDetails, _ := http.NewRequest("GET", "https://orchis.ciam-d.troweprice.io/ui/api/session", nil)
 	cookie, _ := r.Cookie("token")
 	sessionDetails.AddCookie(cookie)

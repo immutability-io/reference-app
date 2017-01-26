@@ -3,8 +3,11 @@ package middlewares
 
 import (
 	"crypto/tls"
+	"crypto/x509"
+	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -22,10 +25,21 @@ func SetSessionStore(sessionStore sessions.Store) func(http.Handler) http.Handle
 func MustLogin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 
-		tr := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		caCert, err := ioutil.ReadFile("/etc/ssl/root.crt")
+		if err != nil {
+			logrus.Fatal(err)
+			return
 		}
-		client := &http.Client{Transport: tr}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+
+		client := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					RootCAs: caCertPool,
+				},
+			},
+		}
 		sessionRequest, _ := http.NewRequest("GET", "https://orchis.ciam-d.troweprice.io/ui/api/session/verify", nil)
 		cookie, _ := req.Cookie("token")
 		if cookie == nil {
