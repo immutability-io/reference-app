@@ -93,7 +93,7 @@ func GetHealth(w http.ResponseWriter, r *http.Request) {
 
 func GetSecret(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	caCert, err := ioutil.ReadFile("/etc/ssl/cacert.crt")
+	caCert, err := ioutil.ReadFile("/usr/local/share/ca-certificates/cacert.crt")
 	if err != nil {
 		logrus.Fatal(err)
 		return
