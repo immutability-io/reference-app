@@ -5,9 +5,83 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
+	"github.com/Sirupsen/logrus"
 	"net/http"
 	"strings"
 )
+
+type AuthenticationResponse struct {
+	RequestId     string `json:"request_id"`
+	LeaseId       string `json:"lease_id"`
+	Renewable     bool   `json:"renewable"`
+	LeaseDuration int    `json:"lease_duration"`
+	Data          string `json:"data"`
+	WrapInfo      string `json:"wrap_info"`
+	Warnings      string `json:"warnings"`
+	Auth          struct {
+		ClientToken string   `json:"client_token"`
+		Accessor    string   `json:"accessor"`
+		Policies    []string `json:"policies"`
+		Meatdata    struct {
+			AuthorityKeyId string `json:"authority_key_id"`
+			CertName       string `json:"cert_name"`
+			CommonName     string `json:"common_name"`
+			SubjectKeyId   string `json:"subject_key_id"`
+		}
+		LeaseDuration int  `json:"lease_duration"`
+		Renewable     bool `json:"renewable"`
+	}
+}
+
+
+func VaultTLSAuthenticate() (token string, err error) {
+	caCert, err := ioutil.ReadFile("/usr/local/share/ca-certificates/cacert.crt")
+	if err != nil {
+		logrus.Fatal(err)
+		return
+	}
+	certFile := "/etc/ssl/application.crt"
+	keyFile := "/etc/ssl/application.key"
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		logrus.Fatal(err)
+		return "", err
+	}
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				Certificates: []tls.Certificate{cert},
+				RootCAs:      caCertPool,
+			},
+		},
+	}
+	authRequest, _ := http.NewRequest("POST", "https://vault.troweprice.com:8200/v1/auth/cert/login", nil)
+	resp, err := client.Do(authRequest)
+	if err != nil {
+		logrus.Fatal(err)
+		return "", err
+	}
+	var authenticationData AuthenticationResponse
+	var htmlData []byte
+	if resp != nil {
+		htmlData, _ = ioutil.ReadAll(resp.Body)
+	}
+	if err != nil {
+		logrus.Fatal(err)
+		return "", err
+	}
+	err = json.Unmarshal(htmlData, &authenticationData)
+	if err != nil {
+		logrus.Fatal(err)
+		return "", err
+	}
+	return authenticationData.Auth.ClientToken, nil
+}
 
 // BasicRealm is used when setting the WWW-Authenticate response header.
 var BasicRealm = "Authorization Required"

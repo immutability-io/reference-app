@@ -29,42 +29,21 @@ type CIAMSession struct {
 }
 
 type CustomSecret struct {
+	Secret1 string `json:"secret1"`
+	Secret2 string `json:"secret2"`
+}
+
+type VaultSecret struct {
 	RequestId     string `json:"request_id"`
 	LeaseId       string `json:"lease_id"`
 	Renewable     bool   `json:"renewable"`
 	LeaseDuration int    `json:"lease_duration"`
 	Data          struct {
-		Value struct {
-			Secret1 string `json:"secret1"`
-			Secret2 string `json:"secret2"`
-		}
-		WrapInfo string `json:"wrap_info"`
-		Warnings string `json:"warnings"`
-		Auth     struct {
-			ClientToken string   `json:"client_token"`
-			Accessor    string   `json:"accessor"`
-			Policies    []string `json:"policies"`
-			Meatdata    struct {
-				AuthorityKeyId string `json:"authority_key_id"`
-				CertName       string `json:"cert_name"`
-				CommonName     string `json:"common_name"`
-				SubjectKeyId   string `json:"subject_key_id"`
-			}
-			LeaseDuration int  `json:"lease_duration"`
-			Renewable     bool `json:"renewable"`
-		}
+		Value string `json:"value"`
 	}
-}
-
-type AuthenticationResponse struct {
-	RequestId     string `json:"request_id"`
-	LeaseId       string `json:"lease_id"`
-	Renewable     bool   `json:"renewable"`
-	LeaseDuration int    `json:"lease_duration"`
-	Data          string `json:"data"`
-	WrapInfo      string `json:"wrap_info"`
-	Warnings      string `json:"warnings"`
-	Auth          struct {
+	WrapInfo string `json:"wrap_info"`
+	Warnings string `json:"warnings"`
+	Auth     struct {
 		ClientToken string   `json:"client_token"`
 		Accessor    string   `json:"accessor"`
 		Policies    []string `json:"policies"`
@@ -98,37 +77,44 @@ func GetSecret(w http.ResponseWriter, r *http.Request) {
 		logrus.Fatal(err)
 		return
 	}
-	certFile := "/etc/ssl/application.crt"
-	keyFile := "/etc/ssl/application.key"
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
-	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-	if err != nil {
-		logrus.Fatal(err)
-	}
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				Certificates: []tls.Certificate{cert},
 				RootCAs:      caCertPool,
 			},
 		},
 	}
-	authRequest, _ := http.NewRequest("POST", "https://vault.troweprice.com:8200/v1/auth/cert/login", nil)
-	resp, err := client.Do(authRequest)
+	token, err := libhttp.VaultTLSAuthenticate()
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
 	}
-	var data AuthenticationResponse
+	secretRequest, _ := http.NewRequest("GET", "https://vault.troweprice.com:8200/v1/secret/svc-accts/golang.trp-ciam-np.awstrp.net", nil)
+	secretRequest.Header.Set("X-Vault-Token", token)
+	resp, err := client.Do(secretRequest)
+	if err != nil {
+		libhttp.HandleErrorJson(w, err)
+		return
+	}
 	var htmlData []byte
+	var vaultSecret VaultSecret
 	if resp != nil {
 		htmlData, _ = ioutil.ReadAll(resp.Body)
 	}
 	if err != nil {
 		panic(err.Error())
 	}
-	err = json.Unmarshal(htmlData, &data)
+	err = json.Unmarshal(htmlData, &vaultSecret)
+	if err != nil {
+		libhttp.HandleErrorJson(w, err)
+		return
+	}
+
+	var customSecret CustomSecret
+	bytes := []byte(vaultSecret.Data.Value)
+	err = json.Unmarshal(bytes, &customSecret)
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
@@ -141,7 +127,7 @@ func GetSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl.Execute(w, data)
+	tmpl.Execute(w, customSecret)
 
 }
 
