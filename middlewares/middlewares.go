@@ -25,8 +25,9 @@ func SetSessionStore(sessionStore sessions.Store) func(http.Handler) http.Handle
 // MustLogin is a middleware that checks existence of current user.
 func MustLogin(config *viper.Viper, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		caCertFile := config.Get("vault_cacert_file").(string)
+		caCertFile := config.Get("http_cacert_file").(string)
 		caCert, err := ioutil.ReadFile(caCertFile)
+		logrus.Debug("http_cacert_file: " + caCertFile)
 		if err != nil {
 			logrus.Fatal(err)
 			return
@@ -42,7 +43,9 @@ func MustLogin(config *viper.Viper, next http.Handler) http.Handler {
 			},
 		}
 		sessionVerifyUrl := config.Get("ciam_session_verify_url").(string)
+		logrus.Debug("ciam_session_verify_url: " + sessionVerifyUrl)
 		sessionRedirectUrl := config.Get("ciam_authentication_redirect_url").(string)
+		logrus.Debug("ciam_authentication_redirect_url: " + sessionRedirectUrl)
 		sessionRequest, _ := http.NewRequest("GET", sessionVerifyUrl, nil)
 		cookie, _ := req.Cookie("token")
 		if cookie == nil {
