@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/Sirupsen/logrus"
 	"github.com/immutability-io/reference-app/libhttp"
+	"github.com/spf13/viper"
 	"html/template"
 	"io/ioutil"
 	"net/http"
@@ -58,124 +59,132 @@ type VaultSecret struct {
 	}
 }
 
-func GetHealth(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	tmpl, err := template.ParseFiles("/content/templates/dashboard.html.tmpl", "/content/templates/health.html.tmpl")
+func GetHealth(config *viper.Viper) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		tmpl, err := template.ParseFiles("/content/templates/dashboard.html.tmpl", "/content/templates/health.html.tmpl")
+		if err != nil {
+			libhttp.HandleErrorJson(w, err)
+			return
+		}
 
-	if err != nil {
-		libhttp.HandleErrorJson(w, err)
-		return
+		tmpl.Execute(w, nil)
 	}
-
-	tmpl.Execute(w, nil)
 }
 
-func GetSecret(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	caCert, err := ioutil.ReadFile("/usr/local/share/ca-certificates/cacert.crt")
-	if err != nil {
-		logrus.Fatal(err)
-		return
-	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs:      caCertPool,
+func GetSecret(config *viper.Viper) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		caCertFile := config.Get("vault_cacert_file").(string)
+		caCert, err := ioutil.ReadFile(caCertFile)
+		if err != nil {
+			logrus.Fatal(err)
+			return
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		client := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					RootCAs: caCertPool,
+				},
 			},
-		},
-	}
-	token, err := libhttp.VaultTLSAuthenticate()
-	if err != nil {
-		libhttp.HandleErrorJson(w, err)
-		return
-	}
-	secretRequest, _ := http.NewRequest("GET", "https://vault.troweprice.com:8200/v1/secret/svc-accts/golang.trp-ciam-np.awstrp.net", nil)
-	secretRequest.Header.Set("X-Vault-Token", token)
-	resp, err := client.Do(secretRequest)
-	if err != nil {
-		libhttp.HandleErrorJson(w, err)
-		return
-	}
-	var htmlData []byte
-	var vaultSecret VaultSecret
-	if resp != nil {
-		htmlData, _ = ioutil.ReadAll(resp.Body)
-	}
-	if err != nil {
-		panic(err.Error())
-	}
-	err = json.Unmarshal(htmlData, &vaultSecret)
-	if err != nil {
-		libhttp.HandleErrorJson(w, err)
-		return
-	}
+		}
+		token, err := libhttp.VaultTLSAuthenticate(config)
+		if err != nil {
+			libhttp.HandleErrorJson(w, err)
+			return
+		}
+		secretUrl := config.Get("vault_secret_path").(string) + config.Get("application_id").(string)
+		secretRequest, _ := http.NewRequest("GET", secretUrl, nil)
+		secretRequest.Header.Set("X-Vault-Token", token)
+		resp, err := client.Do(secretRequest)
+		if err != nil {
+			libhttp.HandleErrorJson(w, err)
+			return
+		}
+		var htmlData []byte
+		var vaultSecret VaultSecret
+		if resp != nil {
+			htmlData, _ = ioutil.ReadAll(resp.Body)
+		}
+		if err != nil {
+			panic(err.Error())
+		}
+		err = json.Unmarshal(htmlData, &vaultSecret)
+		if err != nil {
+			libhttp.HandleErrorJson(w, err)
+			return
+		}
 
-	var customSecret CustomSecret
-	bytes := []byte(vaultSecret.Data.Value)
-	err = json.Unmarshal(bytes, &customSecret)
-	if err != nil {
-		libhttp.HandleErrorJson(w, err)
-		return
+		var customSecret CustomSecret
+		bytes := []byte(vaultSecret.Data.Value)
+		err = json.Unmarshal(bytes, &customSecret)
+		if err != nil {
+			libhttp.HandleErrorJson(w, err)
+			return
+		}
+
+		tmpl, err := template.ParseFiles("/content/templates/dashboard.html.tmpl", "/content/templates/secret.html.tmpl")
+
+		if err != nil {
+			libhttp.HandleErrorJson(w, err)
+			return
+		}
+
+		tmpl.Execute(w, customSecret)
 	}
-
-	tmpl, err := template.ParseFiles("/content/templates/dashboard.html.tmpl", "/content/templates/secret.html.tmpl")
-
-	if err != nil {
-		libhttp.HandleErrorJson(w, err)
-		return
-	}
-
-	tmpl.Execute(w, customSecret)
-
 }
 
-func GetHome(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	caCert, err := ioutil.ReadFile("/etc/ssl/root.crt")
-	if err != nil {
-		logrus.Fatal(err)
-		return
-	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
+func GetHome(config *viper.Viper) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		caCertFile := config.Get("vault_cacert_file").(string)
+		caCert, err := ioutil.ReadFile(caCertFile)
+		if err != nil {
+			logrus.Fatal(err)
+			return
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
 
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs: caCertPool,
+		client := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					RootCAs: caCertPool,
+				},
 			},
-		},
-	}
-	sessionDetails, _ := http.NewRequest("GET", "https://orchis.ciam-d.troweprice.io/ui/api/session", nil)
-	cookie, _ := r.Cookie("token")
-	sessionDetails.AddCookie(cookie)
-	resp, err := client.Do(sessionDetails)
-	if err != nil {
-		libhttp.HandleErrorJson(w, err)
-		return
-	}
-	var data CIAMSession
-	var htmlData []byte
-	if resp != nil {
-		htmlData, _ = ioutil.ReadAll(resp.Body)
-	}
-	if err != nil {
-		panic(err.Error())
-	}
-	err = json.Unmarshal(htmlData, &data)
-	if err != nil {
-		libhttp.HandleErrorJson(w, err)
-		return
-	}
+		}
+		ciamSessionUrl := config.Get("ciam_session_url").(string)
+		sessionDetails, _ := http.NewRequest("GET", ciamSessionUrl, nil)
+		cookie, _ := r.Cookie("token")
+		sessionDetails.AddCookie(cookie)
+		resp, err := client.Do(sessionDetails)
+		if err != nil {
+			libhttp.HandleErrorJson(w, err)
+			return
+		}
+		var data CIAMSession
+		var htmlData []byte
+		if resp != nil {
+			htmlData, _ = ioutil.ReadAll(resp.Body)
+		}
+		if err != nil {
+			panic(err.Error())
+		}
+		err = json.Unmarshal(htmlData, &data)
+		if err != nil {
+			libhttp.HandleErrorJson(w, err)
+			return
+		}
 
-	tmpl, err := template.ParseFiles("/content/templates/dashboard.html.tmpl", "/content/templates/home.html.tmpl")
+		tmpl, err := template.ParseFiles("/content/templates/dashboard.html.tmpl", "/content/templates/home.html.tmpl")
 
-	if err != nil {
-		libhttp.HandleErrorJson(w, err)
-		return
+		if err != nil {
+			libhttp.HandleErrorJson(w, err)
+			return
+		}
+
+		tmpl.Execute(w, data)
 	}
-
-	tmpl.Execute(w, data)
 }

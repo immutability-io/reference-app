@@ -2,13 +2,14 @@
 package libhttp
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"crypto/tls"
-	"crypto/x509"
-	"io/ioutil"
 	"github.com/Sirupsen/logrus"
+	"github.com/spf13/viper"
+	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -36,15 +37,15 @@ type AuthenticationResponse struct {
 	}
 }
 
-
-func VaultTLSAuthenticate() (token string, err error) {
-	caCert, err := ioutil.ReadFile("/usr/local/share/ca-certificates/cacert.crt")
+func VaultTLSAuthenticate(config *viper.Viper) (token string, err error) {
+	vaultCaCertFile := config.Get("vault_cacert_file").(string)
+	caCert, err := ioutil.ReadFile(vaultCaCertFile)
 	if err != nil {
 		logrus.Fatal(err)
 		return
 	}
-	certFile := "/etc/ssl/application.crt"
-	keyFile := "/etc/ssl/application.key"
+	certFile := config.Get("vault_cert_file").(string)
+	keyFile := config.Get("vault_key_file").(string)
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
@@ -60,7 +61,8 @@ func VaultTLSAuthenticate() (token string, err error) {
 			},
 		},
 	}
-	authRequest, _ := http.NewRequest("POST", "https://vault.troweprice.com:8200/v1/auth/cert/login", nil)
+	vaultCertAuthUrl := config.Get("vault_cert_auth_url").(string)
+	authRequest, _ := http.NewRequest("POST", vaultCertAuthUrl, nil)
 	resp, err := client.Do(authRequest)
 	if err != nil {
 		logrus.Fatal(err)
