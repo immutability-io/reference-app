@@ -139,7 +139,7 @@ func GetSecret(config *viper.Viper) http.HandlerFunc {
 func GetHome(config *viper.Viper) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		caCertFile := config.Get("vault_cacert_file").(string)
+		caCertFile := config.Get("http_cacert_file").(string)
 		logrus.Debug("CA Cert file: " + caCertFile)
 		caCert, err := ioutil.ReadFile(caCertFile)
 		if err != nil {
