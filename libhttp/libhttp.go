@@ -14,6 +14,23 @@ import (
 	"strings"
 )
 
+type CIAMSession struct {
+	Entitlements             []string `json:"entitlements"`
+	LastName                 string   `json:"lastName"`
+	GoogleAuthSecretAccepted string   `json:"googleAuthSecretAccepted"`
+	CustomerAlias            string   `json:"customerAlias"`
+	MfaMethod                string   `json:"mfaMethod"`
+	Locale                   string   `json:"locale"`
+	EulaApproval             string   `json:"eulaApproval"`
+	Uuid                     string   `json:"uuid"`
+	FirstName                string   `json:"firstName"`
+	Uid                      string   `json:"uid"`
+	KbaAccepted              string   `json:"kbaAccepted"`
+	EntitlementGroups        []string `json:"entitlementGroups"`
+	AuthLevel                int      `json:"authLevel"`
+	Customer                 string   `json:"customer"`
+}
+
 type AuthenticationResponse struct {
 	RequestId     string `json:"request_id"`
 	LeaseId       string `json:"lease_id"`
@@ -83,6 +100,48 @@ func VaultTLSAuthenticate(config *viper.Viper) (token string, err error) {
 		return "", err
 	}
 	return authenticationData.Auth.ClientToken, nil
+}
+
+func GetCIAMSession(config *viper.Viper, r *http.Request) (session CIAMSession, err error) {
+	var data CIAMSession
+	caCertFile := config.Get("http_cacert_file").(string)
+	logrus.Debug("CA Cert file: " + caCertFile)
+	caCert, err := ioutil.ReadFile(caCertFile)
+	if err != nil {
+		logrus.Fatal(err)
+		return data, err
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: caCertPool,
+			},
+		},
+	}
+	ciamSessionUrl := config.Get("ciam_session_url").(string)
+	sessionDetails, _ := http.NewRequest("GET", ciamSessionUrl, nil)
+	cookie, _ := r.Cookie("token")
+	sessionDetails.AddCookie(cookie)
+	resp, err := client.Do(sessionDetails)
+	logrus.Debug("ciam_session_url: " + ciamSessionUrl)
+	if err != nil {
+		return data, err
+	}
+	var htmlData []byte
+	if resp != nil {
+		htmlData, _ = ioutil.ReadAll(resp.Body)
+	}
+	if err != nil {
+		panic(err.Error())
+	}
+	err = json.Unmarshal(htmlData, &data)
+	if err != nil {
+		return data, err
+	}
+	return data, nil
 }
 
 // BasicRealm is used when setting the WWW-Authenticate response header.

@@ -1,13 +1,15 @@
 {{define "content"}}
-<div class="container">
-    <div class="row">
-        <div class="jumbotron">
-            <h1>Hello, {{ .FirstName }} {{ .LastName }}!</h1>
-            <p>Your entitlements are:</p>
-            {{ range .Entitlements }}
-            <p>{{ . }}</p>
+<div class="row  border-bottom white-bg dashboard-header">
+    <div class="col-sm-3">
+        <h2>Welcome {{ .Session.FirstName }}</h2>
+        <small>These are your entitlements:</small>
+        <ul class="list-group clear-list m-t">
+            {{ range $index, $element := .Session.Entitlements }}
+            <li class="list-group-item">
+                <span class="label label-info">{{ $index }}</span>{{ $element }}
+            </li>
             {{ end }}
-        </div>
+        </ul>
     </div>
 </div>
 {{end}}

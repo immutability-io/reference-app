@@ -1,0 +1,18 @@
+application_id = "golang.trp-ciam-np.awstrp.net"
+cookie_secret = "jlKAgk0y1PXp0Qe-"
+http_addr = ":8888"
+http_cacert_file = "/etc/ssl/root.crt"
+http_cert_file = ""
+http_key_file = ""
+http_drain_interval = "1s"
+debug_file = "/tmp/"
+
+vault_cert_file = "/etc/ssl/application.crt"
+vault_cacert_file = "/usr/local/share/ca-certificates/cacert.crt"
+vault_key_file = "/etc/ssl/application.key"
+vault_cert_auth_url = "https://vault.troweprice.com:8200/v1/auth/cert/login"
+vault_secret_path = "https://vault.troweprice.com:8200/v1/secret/svc-accts/"
+
+ciam_session_url = "https://orchis.ciam-d.troweprice.io/ui/api/session"
+ciam_session_verify_url = "https://orchis.ciam-d.troweprice.io/ui/api/session/verify"
+ciam_authentication_redirect_url = "https://orchis.ciam-d.troweprice.io"
