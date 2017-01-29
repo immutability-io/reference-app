@@ -41,6 +41,7 @@ func (app *Application) mux() *gorilla_mux.Router {
 	router := gorilla_mux.NewRouter()
 
 	router.Handle("/", middlewares.MustLogin(app.config, http.HandlerFunc(handlers.GetHome(app.config)))).Methods("GET")
+	router.Handle("/metadata", middlewares.MustLogin(app.config, http.HandlerFunc(handlers.GetIdentityDocument(app.config)))).Methods("GET")
 	router.Handle("/secret", middlewares.MustLogin(app.config, http.HandlerFunc(handlers.GetSecret(app.config)))).Methods("GET")
 	router.Handle("/health", http.HandlerFunc(handlers.GetHealth(app.config))).Methods("GET")
 

@@ -1,0 +1,28 @@
+{{define "content"}}
+<div class="container">
+    <div class="row">
+        <div class="jumbotron">
+            <h1>Instance Identity Document</h1>
+            <p>AvailabilityZone: {{ .AvailabilityZone }}</p>
+            <p>PrivateIP: {{ .PrivateIP }}</p>
+            <p>Version: {{ .Version }}</p>
+            <p>Region: {{ .Region }}</p>
+            <p>InstanceID: {{ .InstanceID }}</p>
+            <p>InstanceType: {{ .InstanceType }}</p>
+            <p>AccountID: {{ .AccountID }}</p>
+            <p>ImageID: {{ .ImageID }}</p>
+            <p>KernelID: {{ .KernelID }}</p>
+            <p>RamdiskID: {{ .RamdiskID }}</p>
+            <p>Architecture: {{ .Architecture }}</p>
+            <p>Your BillingProducts are:</p>
+            {{ range .BillingProducts }}
+            <p>{{ . }}</p>
+            {{ end }}
+            <p>Your DevpayProductCodes are:</p>
+            {{ range .DevpayProductCodes }}
+            <p>{{ . }}</p>
+            {{ end }}
+        </div>
+    </div>
+</div>
+{{end}}
