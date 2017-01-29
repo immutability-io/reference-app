@@ -1,6 +1,6 @@
 <!--
 *
-*  CIAM - Responsive Admin Theme
+*  IMMUTABILITY - Responsive Admin Theme
 *  version 2.6
 *
 -->
@@ -41,7 +41,7 @@
                              </span>
                                 <a data-toggle="dropdown" class="dropdown-toggle" href="#">
                                     <span class="clear"> <span class="block m-t-xs"> <strong class="font-bold">{{ .Session.FirstName }} {{ .Session.LastName }}</strong>
-                            </span> <span class="text-muted text-xs block">{{ .Session.Uid }}<b class="caret"></b></span> </span>
+                             </span> <span class="text-muted text-xs block">{{ .Session.Uid }}<b class="caret"></b></span> </span>
                                 </a>
                                 <ul class="dropdown-menu animated fadeInRight m-t-xs">
                                     <li><a href="profile.html">Profile</a></li>
@@ -52,11 +52,11 @@
                                 </ul>
                             </div>
                             <div class="logo-element">
-                                CIAM
+                                IMMUTABILITY
                             </div>
                         </li>
                         <li class="active">
-                            <a href="index.html"><i class="fa fa-th-large"></i> <span class="nav-label">Test Links</span> <span class="fa arrow"></span></a>
+                            <a href="index.html"><i class="fa fa-th-large"></i> <span class="nav-label">Tests</span> <span class="fa arrow"></span></a>
                             <ul class="nav nav-second-level">
                                 <li class="active"><a href="/">Session Details</a></li>
                                 <li><a href="/metadata">Identity Instance Details</a></li>
@@ -81,7 +81,7 @@
                         </div>
                         <ul class="nav navbar-top-links navbar-right">
                             <li>
-                                <span class="m-r-sm text-muted welcome-message">Welcome to CIAM</span>
+                                <span class="m-r-sm text-muted welcome-message">Welcome to CIAM.</span>
                             </li>
                             <li class="dropdown">
                                 <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">
@@ -95,9 +95,43 @@
                                             </a>
                                             <div class="media-body">
                                                 <small class="pull-right">46h ago</small>
-                                                <strong>Adam McNeely</strong> did something awesome <strong>again</strong>. <br>
+                                                <strong>Mike Loreipsum</strong> started following <strong>Monica Smith</strong>. <br>
                                                 <small class="text-muted">3 days ago at 7:58 pm - 10.06.2014</small>
                                             </div>
+                                        </div>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li>
+                                        <div class="dropdown-messages-box">
+                                            <a href="profile.html" class="pull-left">
+                                                <img alt="image" class="img-circle" src="img/a4.jpg">
+                                            </a>
+                                            <div class="media-body ">
+                                                <small class="pull-right text-navy">5h ago</small>
+                                                <strong>Chris Johnatan Overtunk</strong> started following <strong>Monica Smith</strong>. <br>
+                                                <small class="text-muted">Yesterday 1:21 pm - 11.06.2014</small>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li>
+                                        <div class="dropdown-messages-box">
+                                            <a href="profile.html" class="pull-left">
+                                                <img alt="image" class="img-circle" src="img/profile.jpg">
+                                            </a>
+                                            <div class="media-body ">
+                                                <small class="pull-right">23h ago</small>
+                                                <strong>Monica Smith</strong> love <strong>Kim Smith</strong>. <br>
+                                                <small class="text-muted">2 days ago at 2:30 am - 11.06.2014</small>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li>
+                                        <div class="text-center link-block">
+                                            <a href="mailbox.html">
+                                                <i class="fa fa-envelope"></i> <strong>Read All Messages</strong>
+                                            </a>
                                         </div>
                                     </li>
                                 </ul>
@@ -161,9 +195,9 @@
                     </nav>
                 </div>
 
-            </div>
+                {{template "content" .}}
 
-            {{template "content" .}}
+            </div>
             <div class="small-chat-box fadeInRight animated">
 
                 <div class="heading" draggable="true">
@@ -671,7 +705,7 @@
                         showMethod: 'slideDown',
                         timeOut: 4000
                     };
-                    toastr.success('Responsive Admin Theme', 'Welcome to CIAM');
+                    toastr.success('Reference Application', 'Welcome to CIAM');
 
                 }, 1300);
 

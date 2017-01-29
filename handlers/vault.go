@@ -42,9 +42,16 @@ type VaultSecret struct {
 	}
 }
 
+type SecretData struct {
+	Session libhttp.CIAMSession
+	Secret  CustomSecret
+}
+
 func GetSecret(config *viper.Viper) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
+		var session libhttp.CIAMSession
+		session, err := libhttp.GetCIAMSession(config, r)
 		caCertFile := config.Get("vault_cacert_file").(string)
 		caCert, err := ioutil.ReadFile(caCertFile)
 		if err != nil {
@@ -94,14 +101,18 @@ func GetSecret(config *viper.Viper) http.HandlerFunc {
 			libhttp.HandleErrorJson(w, err)
 			return
 		}
+		data := SecretData{
+			Session: session,
+			Secret:  customSecret,
+		}
 
-		tmpl, err := template.ParseFiles("/content/templates/dashboard.html.tmpl", "/content/templates/secret.html.tmpl")
+		tmpl, err := template.ParseFiles("/content/templates/index.html.tmpl", "/content/templates/secret.html.tmpl")
 
 		if err != nil {
 			libhttp.HandleErrorJson(w, err)
 			return
 		}
 
-		tmpl.Execute(w, customSecret)
+		tmpl.Execute(w, data)
 	}
 }

@@ -1,28 +1,37 @@
 {{define "content"}}
-<div class="container">
-    <div class="row">
-        <div class="jumbotron">
-            <h1>Instance Identity Document</h1>
-            <p>AvailabilityZone: {{ .AvailabilityZone }}</p>
-            <p>PrivateIP: {{ .PrivateIP }}</p>
-            <p>Version: {{ .Version }}</p>
-            <p>Region: {{ .Region }}</p>
-            <p>InstanceID: {{ .InstanceID }}</p>
-            <p>InstanceType: {{ .InstanceType }}</p>
-            <p>AccountID: {{ .AccountID }}</p>
-            <p>ImageID: {{ .ImageID }}</p>
-            <p>KernelID: {{ .KernelID }}</p>
-            <p>RamdiskID: {{ .RamdiskID }}</p>
-            <p>Architecture: {{ .Architecture }}</p>
-            <p>Your BillingProducts are:</p>
-            {{ range .BillingProducts }}
-            <p>{{ . }}</p>
-            {{ end }}
-            <p>Your DevpayProductCodes are:</p>
-            {{ range .DevpayProductCodes }}
-            <p>{{ . }}</p>
-            {{ end }}
-        </div>
+<div class="row  border-bottom white-bg dashboard-header">
+    <div class="col-sm-3">
+        <h2>Welcome {{ .Session.FirstName }}</h2>
+        <small>This is the Instance Identity Document:</small>
+        <ul class="list-group clear-list m-t">
+            <li class="list-group-item">
+                <span class="label label-info">AvailabilityZone</span>{{ .InstanceDocument.AvailabilityZone }}
+            </li>
+            <li class="list-group-item">
+                <span class="label label-info">PrivateIP</span>{{ .InstanceDocument.PrivateIP }}
+            </li>
+            <li class="list-group-item">
+                <span class="label label-info">Version</span>{{ .InstanceDocument.Version }}
+            </li>
+            <li class="list-group-item">
+                <span class="label label-info">Region</span>{{ .InstanceDocument.Region }}
+            </li>
+            <li class="list-group-item">
+                <span class="label label-info">InstanceID</span>{{ .InstanceDocument.InstanceID }}
+            </li>
+            <li class="list-group-item">
+                <span class="label label-info">InstanceType</span>{{ .InstanceDocument.InstanceType }}
+            </li>
+            <li class="list-group-item">
+                <span class="label label-info">AccountID</span>{{ .InstanceDocument.AccountID }}
+            </li>
+            <li class="list-group-item">
+                <span class="label label-info">ImageID</span>{{ .InstanceDocument.ImageID }}
+            </li>
+            <li class="list-group-item">
+                <span class="label label-info">Architecture</span>{{ .InstanceDocument.Architecture }}
+            </li>
+        </ul>
     </div>
 </div>
 {{end}}
