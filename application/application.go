@@ -46,7 +46,7 @@ func (app *Application) mux() *gorilla_mux.Router {
 	router.Handle("/health", http.HandlerFunc(handlers.GetHealth(app.config))).Methods("GET")
 
 	// Path of static files must be last!
-	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("/content/static")))
 
 	return router
 }
