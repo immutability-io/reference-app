@@ -34,3 +34,17 @@ func GetHome(config *viper.Viper) http.HandlerFunc {
 		tmpl.Execute(w, data)
 	}
 }
+
+func Logout(config *viper.Viper) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		err := libhttp.DeleteCIAMSession(config, r)
+
+		if err != nil {
+			libhttp.HandleErrorJson(w, err)
+			return
+		}
+		sessionRedirectUrl := config.Get("ciam_authentication_redirect_url").(string)
+		http.Redirect(w, r, sessionRedirectUrl, 302)
+	}
+}

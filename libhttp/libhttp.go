@@ -144,6 +144,33 @@ func GetCIAMSession(config *viper.Viper, r *http.Request) (session CIAMSession, 
 	return data, nil
 }
 
+func DeleteCIAMSession(config *viper.Viper, r *http.Request) (err error) {
+	caCertFile := config.Get("http_cacert_file").(string)
+	logrus.Debug("CA Cert file: " + caCertFile)
+	caCert, err := ioutil.ReadFile(caCertFile)
+	if err != nil {
+		logrus.Fatal(err)
+		return err
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: caCertPool,
+			},
+		},
+	}
+	ciamSessionUrl := config.Get("ciam_session_url").(string)
+	sessionDetails, _ := http.NewRequest("DELETE", ciamSessionUrl, nil)
+	cookie, _ := r.Cookie("token")
+	sessionDetails.AddCookie(cookie)
+	_, err = client.Do(sessionDetails)
+	logrus.Debug("ciam_session_url: " + ciamSessionUrl)
+	return err
+}
+
 // BasicRealm is used when setting the WWW-Authenticate response header.
 var BasicRealm = "Authorization Required"
 
