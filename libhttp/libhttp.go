@@ -123,7 +123,8 @@ func GetCIAMSession(config *viper.Viper, r *http.Request) (session CIAMSession, 
 	}
 	ciamSessionUrl := config.Get("ciam_session_url").(string)
 	sessionDetails, _ := http.NewRequest("GET", ciamSessionUrl, nil)
-	cookie, _ := r.Cookie("token")
+	ciamCookieName := config.Get("ciam-cookie-name").(string)
+	cookie, _ := r.Cookie(ciamCookieName)
 	sessionDetails.AddCookie(cookie)
 	resp, err := client.Do(sessionDetails)
 	logrus.Debug("ciam_session_url: " + ciamSessionUrl)
@@ -164,7 +165,8 @@ func DeleteCIAMSession(config *viper.Viper, r *http.Request) (err error) {
 	}
 	ciamSessionUrl := config.Get("ciam_session_url").(string)
 	sessionDetails, _ := http.NewRequest("DELETE", ciamSessionUrl, nil)
-	cookie, _ := r.Cookie("token")
+	ciamCookieName := config.Get("ciam-cookie-name").(string)
+	cookie, _ := r.Cookie(ciamCookieName)
 	sessionDetails.AddCookie(cookie)
 	_, err = client.Do(sessionDetails)
 	logrus.Debug("ciam_session_url: " + ciamSessionUrl)

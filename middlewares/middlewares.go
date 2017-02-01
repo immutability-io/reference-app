@@ -47,7 +47,8 @@ func MustLogin(config *viper.Viper, next http.Handler) http.Handler {
 		sessionRedirectUrl := config.Get("ciam_authentication_redirect_url").(string)
 		logrus.Debug("ciam_authentication_redirect_url: " + sessionRedirectUrl)
 		sessionRequest, _ := http.NewRequest("GET", sessionVerifyUrl, nil)
-		cookie, _ := req.Cookie("token")
+		ciamCookieName := config.Get("ciam-cookie-name").(string)
+		cookie, _ := req.Cookie(ciamCookieName)
 		if cookie == nil {
 			http.Redirect(res, req, sessionRedirectUrl, 302)
 			return
