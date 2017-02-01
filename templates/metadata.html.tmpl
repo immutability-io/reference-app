@@ -38,6 +38,27 @@
                 <span class="label label-info">PKCS7</span>{{ .PKCS7 }}
             </li>
         </ul>
+        <small>This is the instance's IAM Info:</small>
+        <ul class="list-group clear-list m-t">
+            <li class="list-group-item">
+                <span class="label label-info">Code</span>{{ .IAMInfo.Code }}
+            </li>
+            <li class="list-group-item">
+                <span class="label label-info">InstanceProfileArn</span>{{ .IAMInfo.InstanceProfileArn }}
+            </li>
+            <li class="list-group-item">
+                <span class="label label-info">InstanceProfileID</span>{{ .IAMInfo.InstanceProfileID }}
+            </li>
+        </ul>
+        <small>This is the instance's signature and pkcs7:</small>
+        <ul class="list-group clear-list m-t">
+            <li class="list-group-item">
+                <span class="label label-info">Signature</span>{{ .Signature }}
+            </li>
+            <li class="list-group-item">
+                <span class="label label-info">PKCS7</span>{{ .PKCS7 }}
+            </li>
+        </ul>
     </div>
 </div>
 {{end}}
