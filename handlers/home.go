@@ -18,7 +18,7 @@ func GetHome(config *viper.Viper) http.HandlerFunc {
 		session, err := libhttp.GetCIAMSession(config, r)
 
 		if err != nil {
-			libhttp.HandleErrorJson(w, err)
+			libhttp.HandleErrorJSON(w, err)
 			return
 		}
 		data := HomeData{
@@ -27,7 +27,7 @@ func GetHome(config *viper.Viper) http.HandlerFunc {
 		tmpl, err := template.ParseFiles("/content/templates/index.html.tmpl", "/content/templates/home.html.tmpl")
 
 		if err != nil {
-			libhttp.HandleErrorJson(w, err)
+			libhttp.HandleErrorJSON(w, err)
 			return
 		}
 
@@ -41,7 +41,7 @@ func Logout(config *viper.Viper) http.HandlerFunc {
 		err := libhttp.DeleteCIAMSession(config, r)
 
 		if err != nil {
-			libhttp.HandleErrorJson(w, err)
+			libhttp.HandleErrorJSON(w, err)
 			return
 		}
 		sessionRedirectUrl := config.Get("ciam_authentication_redirect_url").(string)

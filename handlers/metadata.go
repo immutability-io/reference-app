@@ -56,7 +56,7 @@ func GetIdentityDocument(config *viper.Viper) http.HandlerFunc {
 		tmpl, err := template.ParseFiles("/content/templates/index.html.tmpl", "/content/templates/metadata.html.tmpl")
 
 		if err != nil {
-			libhttp.HandleErrorJson(w, err)
+			libhttp.HandleErrorJSON(w, err)
 			return
 		}
 

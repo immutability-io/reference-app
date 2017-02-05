@@ -12,7 +12,7 @@ func GetHealth(config *viper.Viper) http.HandlerFunc {
 		w.Header().Set("Content-Type", "text/html")
 		tmpl, err := template.ParseFiles("/content/templates/dashboard.html.tmpl", "/content/templates/health.html.tmpl")
 		if err != nil {
-			libhttp.HandleErrorJson(w, err)
+			libhttp.HandleErrorJSON(w, err)
 			return
 		}
 
