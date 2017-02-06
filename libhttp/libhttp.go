@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -197,6 +198,7 @@ func GetCIAMSession(config *viper.Viper, r *http.Request) (session CIAMSession, 
 	caCertPool.AppendCertsFromPEM(caCert)
 
 	client := &http.Client{
+		Timeout: time.Second * 10,
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
 				RootCAs: caCertPool,
@@ -211,6 +213,8 @@ func GetCIAMSession(config *viper.Viper, r *http.Request) (session CIAMSession, 
 	resp, err := client.Do(sessionDetails)
 	logrus.Debug("ciam_session_url: " + ciamSessionURL)
 	if err != nil {
+		logrus.Debug("Error retrieving session")
+		logrus.Fatal(err)
 		return data, err
 	}
 	var htmlData []byte
@@ -218,10 +222,14 @@ func GetCIAMSession(config *viper.Viper, r *http.Request) (session CIAMSession, 
 		htmlData, _ = ioutil.ReadAll(resp.Body)
 	}
 	if err != nil {
+		logrus.Debug("Error parsing session")
+		logrus.Fatal(err)
 		panic(err.Error())
 	}
 	err = json.Unmarshal(htmlData, &data)
 	if err != nil {
+		logrus.Debug("Error marshalling session")
+		logrus.Fatal(err)
 		return data, err
 	}
 	return data, nil
@@ -333,7 +341,11 @@ func GetCustomSecret(config *viper.Viper) (customSecret CustomSecret, err error)
 		return customSecret, err
 	}
 
-	secretURL := config.Get("vault_secret_path").(string) + config.Get("application_id").(string) + config.Get("secret_name").(string)
+	secretURL := config.Get("vault_secret_path").(string) + config.Get("application_id").(string) + "." + config.Get("account_name").(string) + "." + config.Get("application_domain").(string)
+	secretName := config.Get("secret_name").(string)
+	if secretName != "" {
+		secretURL = secretURL + "/" + secretName
+	}
 	secretRequest, _ := http.NewRequest("GET", secretURL, nil)
 	secretRequest.Header.Set("X-Vault-Token", token)
 	resp, err := client.Do(secretRequest)

@@ -4,14 +4,17 @@ package middlewares
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	"github.com/spf13/viper"
-	"io/ioutil"
-	"net/http"
 )
 
+// SetSessionStore sets the session store
 func SetSessionStore(sessionStore sessions.Store) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -42,24 +45,37 @@ func MustLogin(config *viper.Viper, next http.Handler) http.Handler {
 				},
 			},
 		}
-		sessionVerifyUrl := config.Get("ciam_session_verify_url").(string)
-		logrus.Debug("ciam_session_verify_url: " + sessionVerifyUrl)
-		sessionRedirectUrl := config.Get("ciam_authentication_redirect_url").(string)
-		logrus.Debug("ciam_authentication_redirect_url: " + sessionRedirectUrl)
-		sessionRequest, _ := http.NewRequest("GET", sessionVerifyUrl, nil)
+		sessionVerifyURL := config.Get("ciam_session_verify_url").(string)
+		logrus.Debug("ciam_session_verify_url: " + sessionVerifyURL)
+		sessionRedirectURL := config.Get("ciam_authentication_redirect_url").(string)
+		logrus.Debug("ciam_authentication_redirect_url: " + sessionRedirectURL)
+		sessionRequest, _ := http.NewRequest("GET", sessionVerifyURL, nil)
 		ciamCookieName := config.Get("ciam-cookie-name").(string)
 		cookie, _ := req.Cookie(ciamCookieName)
 		if cookie == nil {
-			http.Redirect(res, req, sessionRedirectUrl, 302)
+			logrus.Debug("No cookie: " + ciamCookieName)
+			http.Redirect(res, req, sessionRedirectURL, 302)
 			return
 		}
+		logrus.Debug("Cookie: " + cookie.String())
 		sessionRequest.AddCookie(cookie)
 		resp, _ := client.Do(sessionRequest)
 
-		if resp == nil || resp.StatusCode != 200 {
-			http.Redirect(res, req, sessionRedirectUrl, 302)
+		if resp == nil {
+			logrus.Debug("curl -v --cookie \"" + cookie.String() + "\" " + sessionVerifyURL)
+			http.Redirect(res, req, sessionRedirectURL, 302)
 			return
 		}
+		if resp.StatusCode != 200 {
+			logrus.Debug("No session - bad status " + strconv.Itoa(resp.StatusCode))
+			var htmlData []byte
+			htmlData, _ = ioutil.ReadAll(resp.Body)
+			message := string(htmlData[:])
+			logrus.Debug("Response " + message)
+			http.Redirect(res, req, sessionRedirectURL, 302)
+			return
+		}
+		logrus.Debug("Session verified")
 		next.ServeHTTP(res, req)
 	})
 }
